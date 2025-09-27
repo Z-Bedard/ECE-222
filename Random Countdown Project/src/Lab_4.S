@@ -106,7 +106,7 @@ _start:
 
     // Set PLIC priority for S1 interrupt  // Set PLIC priority 
     li t1, PLIC_BASE
-    li t2, 4*(S1_PLIC_ID)                  // Calculate address of Interrupt Priority Register
+    li t2, 4*(S1_PLIC_ID)                  // Calculate address of Interrupt Priority Regoster
     add t2, t2, t1
     li t3, S1_PRIORITY                     // Set interrup priority = 7
     sw t3, 0(t2)
@@ -125,18 +125,17 @@ _start:
 
 main_program:
 
-//                   ;This is where you put your code for flashing LED's 
-      li t4, 0x00FC0C00               //Load value to turn on aLL LEDs
-      sw t4, GPIO_OUTPUT(t0)          //Send value to the display
-      li a5, 1                        //Load Argument for Delay function (We decided to have the display frequency be 5Hz)
-      jal DELAY                       //Jump to the delay function
+      li t4, 0x00FC0C00               // Load value to turn on aLL LEDs
+      sw t4, GPIO_OUTPUT(t0)          // Send value to the display
+      li a5, 1                        // Load Argument for Delay function (We decided to have the display frequency be 5Hz)
+      jal DELAY                       // Jump to the delay function
 
-      jal RandomNum                   //  Generate random number
+      jal RandomNum                   // Generate random number
 
-      li t4, 0x0                      //Load value to turn off all LEDs
-      sw t4, GPIO_OUTPUT(t0)          //Send value to the display
-      li a5, 1                        //Load argument for the Delay function
-      jal DELAY                       //Jump to the delay function
+      li t4, 0x0                      // Load value to turn off all LEDs
+      sw t4, GPIO_OUTPUT(t0)          // Send value to the display
+      li a5, 1                        // Load argument for the Delay function
+      jal DELAY                       // Jump to the delay function
       j main_program
 
 
@@ -186,18 +185,18 @@ S1_interrupt:
 
 //                   ;This is where you put your code:
 //                   ;Calculate the time from the randomly generated number in register a7. You will have to scale the random number. Perhaps a7 mod 200 + 50 would work?
-      li a4, 200        //Store 200 in a4 to start shifting a7 around to find desired value
-      rem a4, a7, a4    //First step in scaling is findinging a7 mod 200
-      addi a4, a4, 50   //Add 50 to a4
+      li a4, 200        // Store 200 in a4 to start shifting a7 around to find desired value
+      remu a4, a7, a4    // First step in scaling is findinging a7 mod 200
+      addi a4, a4, 50   // Add 50 to a4
 //                   ;Display this number on the 8 LED's
 //                   ;Subtract 10 (Hex A) and display the number again until it is less than or equal to 0
 //                   ;Reset counter to 0 before exiting the subroutine so it's ready to be used again
       Output_Num:
-            mv a3, a4   //a3 is the argument register for the DISPLAY subroutine
-            jal DISPLAY_NUM //Jump to the DISPLAY function
-            addi a4, a4, -10 //Decrement a4 by 10
+            mv a3, a4   // a3 is the argument register for the DISPLAY subroutine
+            jal DISPLAY_NUM // Jump to the DISPLAY function
+            addi a4, a4, -10 // Decrement a4 by 10
             bge x0, a4, EXITNUM
-            li a5, 10        //Load 10 into a5 to send to delay function to display for 1 second
+            li a5, 10        // Load 10 into a5 to send to delay function to display for 1 second
             jal DELAY_1S
             j Output_Num
 
@@ -208,10 +207,10 @@ S1_interrupt:
 
 //                   ;This is where you put your code for clearing the interrupt pending flag for S1
 
-      li t1, (1 << S1_GPIO_PIN)     //Store the value to clear the desired interrupt bit
-      lw t2, GPIO_FALL_INTERRUPT_PENDING(t0) //Get the current value of the interrupt
-      or t1, t1, t2                 //Set the bit that corresponds to the interrupt to 1 since the button is active low (Interrupt is active when the value is 0)
-      sw t1, GPIO_FALL_INTERRUPT_PENDING(t0) //Write the new value back to the current status of the interrupt to say it's done
+      li t1, (1 << S1_GPIO_PIN)     // Store the value to clear the desired interrupt bit
+      lw t2, GPIO_FALL_INTERRUPT_PENDING(t0) // Get the current value of the interrupt
+      or t1, t1, t2                 // Set the bit that corresponds to the interrupt to 1 since the button is active low (Interrupt is active when the value is 0)
+      sw t1, GPIO_FALL_INTERRUPT_PENDING(t0) // Write the new value back to the current status of the interrupt to say it's done
 
 
 
@@ -223,7 +222,7 @@ S1_interrupt:
 
       // Acknowledge the interrupt in the PLIC (write the IRQ number to PLIC claim/complete register)
       li t1, PLIC_BASE + PLIC_CLAIM          
-      sw t5, 0(t1)                           //Write back to the PLIC to say that it's completed 
+      sw t5, 0(t1)                           // Write back to the PLIC to say that it's completed 
 
       end_interrupt:
             lw ra, 12(sp)                            
@@ -239,7 +238,7 @@ DISPLAY_NUM: //Arguement register is a3
       slli a1, a1, 10     // Store first 2 LED bits in a1 after isolating
       slli a2, a2, 16     // Store last 6 LED bits in a2 after isolating
       add a3, a1, a2      // Put the values together to create the output signal
-      sw a3, GPIO_OUTPUT(t0) //Send values to the LED
+      sw a3, GPIO_OUTPUT(t0) // Send values to the LED
       
       lw ra, 12(sp)
       addi sp, sp, 16
